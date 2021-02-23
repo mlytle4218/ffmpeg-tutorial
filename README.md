@@ -29,7 +29,7 @@ Handling multimedia with ffmpeg is pretty much as simple as this program, althou
 ### Opening the File
 First we have to declare some stuff. We're going to need the stdio (standard I/O) and stdlib (standard Library- has a bunch of basic stuff like strings and ints). Then we have to declare the libav libraries. Since they are C libraries and we are working in C++, we need to bring them in like below. This lets the compiler know what it needs to understand how to use these libraries.
 
-After that, I check to see if there is a file passed to the program, and let's me know if there isn't. I'm a little slow sometimes, so, I need this or I will spend an hour one day trying to figure out why nothing is working because I didn't include a file with the command. Is he really that dumnb? Yeah. Sometimes. We set it as a constant and reference to the data location.
+After that, I check to see if there is a file passed to the program, and let's me know if there isn't. I'm a little slow sometimes, so, I need this or I will spend an hour one day trying to figure out why nothing is working because I didn't include a file with the command. Am I really that dumb? Yeah. Sometimes. We set it as a constant and reference to the data location.
 
     #include <stdio.h>
     #include <stdlib.h>
