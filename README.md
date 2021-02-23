@@ -27,15 +27,6 @@ At its very basic level, dealing with video and audio streams is very easy:
 
 Handling multimedia with ffmpeg is pretty much as simple as this program, although some programs might have a very complex "DO SOMETHING" step. So in this tutorial, we're going to open a file, read from the video stream inside it, and our DO SOMETHING is going to be writing the frame to a PPM file.
 ### Opening the File
-First, let's see how we open a file in the first place. With ffmpeg, you have to first initialize the library.
-
-    #include <libavcodec/avcodec.h>  
-    #include <libavformat/avformat.h>  
-    #include <ffmpeg/swscale.h>  
-    ...  
-    int main(int argc, charg *argv[]) {  
-    av_register_all();
-
 First we have to declare some stuff. We're going to need the stdio (standard I/O) and stdlib (standard Library- has a bunch of basic stuff like strings and ints). Then we have to declare the libav libraries. Since they are C libraries and we are working in C++, we need to bring them in like below. This lets the compiler know what it needs to understand how to use these libraries.
 
 After that, I check to see if there is a file passed to the program, and let's me know if there isn't. I'm a little slow sometimes, so, I need this or I will spend an hour one day trying to figure out why nothing is working because I didn't include a file with the command. Is he really that dumnb? Yeah. Sometimes. We set it as a constant and reference to the data location.
@@ -77,7 +68,7 @@ Now we actually open the Context (Container). This function takes the file that 
 
 
 
-    
+
 
     AVFormatContext *pFormatCtx = NULL;
 
