@@ -70,10 +70,46 @@ int main(int argc, char *argv[])
                         pFrame->display_picture_number);
                 }
             } 
+            // printf("here\n");
         }
-        avcodec_parameters_free(&pLocalCodecParameters);
+        else if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_AUDIO)
+        {
+            printf("Audio Codec: %d channels, sample rate %d\n", pLocalCodecParameters->channels, pLocalCodecParameters->sample_rate);
+            printf("\tCodec %s ID %d bit_rate %ld\n", pLocalCodec->long_name, pLocalCodec->id, pLocalCodecParameters->bit_rate);
 
+            AVCodecContext *pCodecContext = avcodec_alloc_context3(pLocalCodec);
+            avcodec_parameters_to_context(pCodecContext, pLocalCodecParameters);
+            avcodec_open2(pCodecContext, pLocalCodec, NULL);
+
+            AVPacket *pPacketA = av_packet_alloc();
+            AVFrame *pFrameA = av_frame_alloc();
+
+            printf("%d\n", av_read_frame(pFormatContext, pPacketA));
+            while (av_read_frame(pFormatContext, pPacketA) >= 0)
+            {
+                printf("here\n");
+                avcodec_send_packet(pCodecContext, pPacketA);
+                avcodec_receive_frame(pCodecContext, pFrameA);
+                printf("linesize:%d\n", pFrameA->linesize[0]);
+                if (true)
+                // if (pFrameA->linesize[0] > 0)
+                {
+                    printf(
+                        "Audio Frame %c (%d) pts %ld dts %ld key_frame %d [coded_picture_number %d, display_picture_number %d]\n",
+                        av_get_picture_type_char(pFrameA->pict_type),
+                        pCodecContext->frame_number,
+                        pFrameA->pts,
+                        pFrameA->pkt_dts,
+                        pFrameA->key_frame,
+                        pFrameA->coded_picture_number,
+                        pFrameA->display_picture_number);
+                }
+            }
+            // printf("here\n");
+        }
     }
 
+    // std::cout >> "bob" >> std::endl;
+    // fprintf(stderr, "Could not open file '%s'\n", "bob");
     fprintf(stderr, "done \n");
 }

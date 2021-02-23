@@ -10,7 +10,7 @@ This assumes you are using a linux distro with apt.
 1. compile command 
 This is a little janky. I'm still learning about C++ methods of doing things. This works for now.
 
-    g++ main.cpp -lavutil -lavformat -lavcodec
+    g++ main01.cpp -lavutil -lavformat -lavcodec
 
 ## Tutorial 01: Making Screencaps
 
@@ -53,15 +53,70 @@ After that, I check to see if there is a file passed to the program, and let's m
         const char *fileName = argv[1];
 
 
-Before we open the file, we're going to make space for it. Here we allocate the memory for the Context. In Libav parlance, Context is the container or the thing that holds all the data about the data inside. It's how your MP3 knows it's Nine Inch Nails Head Like a Hole and 3 minutes 19 seconds long before it ever starts playing it.
+Before we open the file, we're going to make space for it. Here we allocate the memory for the Context. In Libav parlance, Context is the container or the thing that holds all the data about the data inside. It's how your MP3 knows it's Nine Inch Nails Head Like a Hole and 5 minutes long before it ever starts playing it.
 
     AVFormatContext *pFormatContext = avformat_alloc_context();
 
-Now we actually open the Context (Container). This function takes the file that we passed it, and interprets that data into a format that Libav understands best. Then we throw in a little print function to prove that the data is actually there.
+Now we actually open the Context (Container). This function takes the file that we passed it, and interprets that data into a format that Libav understands best. Then we throw in a little print function to prove that the data is actually there. The two NULLs here are stuff we don't need. If we already knew the format of the Container, then we could pass that here. Otherwise, it figures out what it can automatically. The second NULL is where you would pass a dictionary of demuxer private options. 
 
     avformat_open_input(&pFormatContext, fileName, NULL, NULL);
     printf("Format %s, duration %ld us\n", pFormatContext->iformat->long_name, pFormatContext->duration);
 
+The thing is, at this point we have a bunch of data about the media, but no the actual media itself. We need to add that data into our Context struct that we already have. This next step is going to add the infomation all the audio and video streams into out Context.
+
+    avformat_find_stream_info(pFormatContext, NULL);
+
+
+If this is just audio, then it might be just a mono, single track file. It has one stream. Easy Peasy. But, it might be a video file with all the images that make up the visual, a list of surround sound tracks, and optional director's stereo track, and cast commentaries track. We won't get into the weeds with all that. We're just going to find the video data. The function above gave us a new variable in out Context nb_streams. I assume that stands for **n**um**b**er of streams. We use it like this to rotate through them.
+
+    for (int i = 0; i < pFormatContext->nb_streams; i++)
+    {
+    }
+
+While we are cycling through these, we have to check them out. This AVCodecParameters is a struct that Libav provides that hold info about the streams in Context. This gets the codepar or Libav's internal code id for the codec that matches this stream.
+
+    AVCodecParameters *pLocalCodecParameters = pFormatContext->streams[i]->codecpar;
+Now that we have the codec identified, we have to go find it out on the system. AVCodec is a struct from Libav just for codec information. We use the avcodec_find_decoder to the search the system this is running on to find codecs available.
+
+    AVCodec *pLocalCodec = avcodec_find_decoder(pLocalCodecParameters->codec_id);
+As we're cycling through the streams, we're wondering what kind of stream we have. Libav comes with a way to figure that out. Here we test for a video stream. If it is, then we'll delve a little deeper into it.
+    
+    if (pLocalCodecParameters->codec_type == AVMEDIA_TYPE_VIDEO)
+    {
+    }
+
+Just like we created a Context for the container, we're going to do that for the codec. It's just creating a struct that Libav understands and holds all the needed information about the codec.
+
+    AVCodecContext *pCodecContext = avcodec_alloc_context3(pLocalCodec);
+Just like before, now that we have the Context, this time for the codec, we have to fill it with data.
+
+    avcodec_parameters_to_context(pCodecContext, pLocalCodecParameters);
+Now that we all the information about the codec, we have to open it. I'll be honest that I don't understand the actual process here. I just you have to do it for it to work.
+
+    avcodec_open2(pCodecContext, pLocalCodec, NULL);
+And now we get to the meat of the decoding. These next two are like before and after. Some media files are huge and you just can't open up everything all at once. So these are two little structs that holds a bit of the file as compressed and then uncompressed parts. They are buffers, you fill up the AVPacket with compressed data, then youn uncompress it to the AVFrame. You do some with that data, then you empty them and do it again with the next part.
+    AVPacket *pPacket = av_packet_alloc();
+    AVFrame *pFrame = av_frame_alloc();
+
+
+    while (av_read_frame(pFormatContext, pPacket) >= 0)
+    {
+        avcodec_send_packet(pCodecContext, pPacket);
+        avcodec_receive_frame(pCodecContext, pFrame);
+        // printf("linesize:%d\n", pFrame->linesize[0]);
+        if (pFrame->linesize[0] > 0)
+        {
+            printf(
+                "Video Frame %c (%d) pts %ld dts %ld key_frame %d [coded_picture_number %d, display_picture_number %d]\n",
+                av_get_picture_type_char(pFrame->pict_type),
+                pCodecContext->frame_number,
+                pFrame->pts,
+                pFrame->pkt_dts,
+                pFrame->key_frame,
+                pFrame->coded_picture_number,
+                pFrame->display_picture_number);
+        }
+    } 
 
 
 
