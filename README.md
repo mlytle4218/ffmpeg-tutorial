@@ -57,7 +57,7 @@ Before we open the file, we're going to make space for it. Here we allocate the 
 
     AVFormatContext *pFormatContext = avformat_alloc_context();
 
-Now we actually open the Context (Container). This function takes the file that we passed it, and interprets that data into a format that Libav understands best. Then we through in a little print function to prove that the data is actually there.
+Now we actually open the Context (Container). This function takes the file that we passed it, and interprets that data into a format that Libav understands best. Then we throw in a little print function to prove that the data is actually there.
 
     avformat_open_input(&pFormatContext, fileName, NULL, NULL);
     printf("Format %s, duration %ld us\n", pFormatContext->iformat->long_name, pFormatContext->duration);
