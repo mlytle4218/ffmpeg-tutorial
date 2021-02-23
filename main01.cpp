@@ -57,18 +57,18 @@ int main(int argc, char *argv[])
                 avcodec_send_packet(pCodecContext, pPacket);
                 avcodec_receive_frame(pCodecContext, pFrame);
                 // printf("linesize:%d\n", pFrame->linesize[0]);
-                if (pFrame->linesize[0] > 0)
-                {
-                    printf(
-                        "Video Frame %c (%d) pts %ld dts %ld key_frame %d [coded_picture_number %d, display_picture_number %d]\n",
-                        av_get_picture_type_char(pFrame->pict_type),
-                        pCodecContext->frame_number,
-                        pFrame->pts,
-                        pFrame->pkt_dts,
-                        pFrame->key_frame,
-                        pFrame->coded_picture_number,
-                        pFrame->display_picture_number);
-                }
+                // if (pFrame->linesize[0] > 0)
+                // {
+                //     printf(
+                //         "Video Frame %c (%d) pts %ld dts %ld key_frame %d [coded_picture_number %d, display_picture_number %d]\n",
+                //         av_get_picture_type_char(pFrame->pict_type),
+                //         pCodecContext->frame_number,
+                //         pFrame->pts,
+                //         pFrame->pkt_dts,
+                //         pFrame->key_frame,
+                //         pFrame->coded_picture_number,
+                //         pFrame->display_picture_number);
+                // }
             } 
         }
         avcodec_parameters_free(&pLocalCodecParameters);

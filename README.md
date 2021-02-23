@@ -99,12 +99,18 @@ And now we get to the meat of the decoding. These next two are like before and a
     AVPacket *pPacket = av_packet_alloc();
     AVFrame *pFrame = av_frame_alloc();
 
+So, now we've prepared a place for some data. This si where av_read_frame comes in. From what I can tell, we have an array of packets of data in the container. This functions pops out the first one and puts it into our AVPacket struct. If it runs out, then it shows it has 0 left and stops the while loop we have set up here.
 
     while (av_read_frame(pFormatContext, pPacket) >= 0)
     {
+
+
+So, we've got our packet. That's cool but it's compressed data. We can't do much with that. So, we have these two functions. They work together. The send function looks at the packet and at the codec and decodes the data into a middle ground gobble-de-gook. The receive takes that raw data and puts it into a fashion we can understand in the form of our AVFrame struct.
         avcodec_send_packet(pCodecContext, pPacket);
         avcodec_receive_frame(pCodecContext, pFrame);
-        // printf("linesize:%d\n", pFrame->linesize[0]);
+
+At this point, we have one uncompressed video frame. Awesome. Now what?
+
         if (pFrame->linesize[0] > 0)
         {
             printf(
