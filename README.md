@@ -95,6 +95,7 @@ Now that we all the information about the codec, we have to open it. I'll be hon
 
     avcodec_open2(pCodecContext, pLocalCodec, NULL);
 And now we get to the meat of the decoding. These next two are like before and after. Some media files are huge and you just can't open up everything all at once. So these are two little structs that holds a bit of the file as compressed and then uncompressed parts. They are buffers, you fill up the AVPacket with compressed data, then youn uncompress it to the AVFrame. You do some with that data, then you empty them and do it again with the next part.
+
     AVPacket *pPacket = av_packet_alloc();
     AVFrame *pFrame = av_frame_alloc();
 
