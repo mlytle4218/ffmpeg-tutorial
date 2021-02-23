@@ -1,5 +1,6 @@
 # ffmpeg-tutorial
 Originally stolen from http://dranger.com/ffmpeg/tutorial01.html
+I'm rewriting these for both C++ and a newer version of libav which is 4.2.4-1ubuntu0.1 at the time of this writing
 
 ## Setup
 This assumes you are using a linux distro with apt. 
@@ -7,13 +8,14 @@ This assumes you are using a linux distro with apt.
 
     sudo apt install ffmpeg libavcodec-dev libavformat-dev libavutil-dev libsdl2-dev
 1. compile command 
+This is a little janky. I'm still learning about C++ methods of doing things. This works for now.
 
     g++ main.cpp -lavutil -lavformat -lavcodec
 
 ## Tutorial 01: Making Screencaps
 
 ### Overview
-Movie files have a few basic components. First, the file itself is called a container, and the type of container determines where the information in the file goes. Examples of containers are AVI and Quicktime. Next, you have a bunch of streams; for example, you usually have an audio stream and a video stream. (A "stream" is just a fancy word for "a succession of data elements made available over time".) The data elements in a stream are called frames. Each stream is encoded by a different kind of codec. The codec defines how the actual data is COded and DECoded - hence the name CODEC. Examples of codecs are DivX and MP3. Packets are then read from the stream. Packets are pieces of data that can contain bits of data that are decoded into raw frames that we can finally manipulate for our application. For our purposes, each packet contains complete frames, or multiple frames in the case of audio.
+Movie files have a few basic components. First, the file itself is called a container, and the type of container determines where the information in the file goes. Examples of containers are MP4 and MKV. Next, you have a bunch of streams; for example, you usually have an audio stream and a video stream. (A "stream" is just a fancy word for "a succession of data elements made available over time".) The data elements in a stream are called frames. Each stream is encoded by a different kind of codec. The codec defines how the actual data is COded and DECoded - hence the name CODEC. Examples of codecs are H264, AAC, and MP3. Packets are then read from the stream. Packets are pieces of data that can contain bits of data that are decoded into raw frames that we can finally manipulate for our application. For our purposes, each packet contains complete frames, or multiple frames in the case of audio.
 
 At its very basic level, dealing with video and audio streams is very easy:
 
@@ -34,8 +36,48 @@ First, let's see how we open a file in the first place. With ffmpeg, you have to
     int main(int argc, charg *argv[]) {  
     av_register_all();
 
-This registers all available file formats and codecs with the library so they will be used automatically when a file with the corresponding format/codec is opened. Note that you only need to call av_register_all() once, so we do it here in main(). If you like, it's possible to register only certain individual file formats and codecs, but there's usually no reason why you would have to do that.
-Now we can actually open the file:
+First we have to declare some stuff. We're going to need the stdio (standard I/O) and stdlib (standard Library- has a bunch of basic stuff like strings and ints). Then we have to declare the libav libraries. Since they are C libraries and we are working in C++, we need to bring them in like below. This lets the compiler know what it needs to understand how to use these libraries.
+
+After that, I check to see if there is a file passed to the program, and let's me know if there isn't. I'm a little slow sometimes, so, I need this or I will spend an hour one day trying to figure out why nothing is working because I didn't include a file with the command. Is he really that dumnb? Yeah. Sometimes. We set it as a constant and reference to the data location.
+
+    #include <stdio.h>
+    #include <stdlib.h>
+
+    extern "C"
+    {
+    #include <libavutil/opt.h>
+    #include <libavcodec/avcodec.h>
+    #include <libavformat/avformat.h>
+    #include <libswresample/swresample.h>
+    }
+
+    int main(int argc, char *argv[])
+    {
+        av_log_set_level(AV_LOG_QUIET);
+        if (argc < 2)
+        {
+            fprintf(stderr, "Must include a media file\n");
+            return 1;
+        }
+        const char *fileName = argv[1];
+
+
+Before we open the file, we're going to make space for it. Here we allocate the memory for the Context. In Libav parlance, Context is the container or the thing that holds all the data about the data inside. It's how your MP3 knows it's Nine Inch Nails Head Like a Hole and 3 minutes 19 seconds long before it ever starts playing it.
+
+    AVFormatContext *pFormatContext = avformat_alloc_context();
+
+Now we actually open the Context (Container). This function takes the file that we passed it, and interprets that data into a format that Libav understands best. Then we through in a little print function to prove that the data is actually there.
+
+    avformat_open_input(&pFormatContext, fileName, NULL, NULL);
+    printf("Format %s, duration %ld us\n", pFormatContext->iformat->long_name, pFormatContext->duration);
+
+
+
+
+
+
+
+    
 
     AVFormatContext *pFormatCtx = NULL;
 
